@@ -5,15 +5,15 @@
 # @File : Key_word.py
 # @desc :
 '''
-首先读取一篇文章，将其分解成句子，句子里面包含着已经得到的实体。
-用依存关系计算实体之间的距离，得到一个实体-实体-距离的无向有权图。
-用PageRank给实体进行排名，取排名前10的实体。
+对于每篇已进行命名实体识别（NER）的文章，
+逐句构建依存关系树并计算实体之间的距离，
+从而构建一个基于依存关系的医学主题词无向有权网络。
+最后，使用PageRank算法对医学主题词进行排名，选取前10个词作为该篇文章的关键词。
 '''
 
 import time
 
 start_time = time.time()
-import sys
 import pandas as pd
 import numpy as np
 from subject_verb_object_extract import findSVOs, nlp
@@ -26,12 +26,12 @@ filepath = "D:/000大三下/BioNLP/single_paper/"
 output_dir = "D:/000大三下/BioNLP/result/"
 # filename = 'xx48478'
 # filename = sys.argv[1]
-
 files = os.listdir(filepath)
-i=1
+ii=0
 for file in files:
+    ii += 1
     print(file)
-    print(i/len(files))
+    print(ii/len(files))
     filename = file
     try:
         sample = open(filepath + filename)  # 本次处理的文章
@@ -123,7 +123,7 @@ for file in files:
         mesh_network = pd.DataFrame(mesh_network, columns=['source', 'target', 'weight'])
         mesh_network = mesh_network[mesh_network['weight'] > 0]
         max_min_scaler = lambda x: (np.max(x) - x)
-        # mesh_network['Distance'] = mesh_network[['Distance']].apply(max_min_scaler)
+        mesh_network['Distance'] = mesh_network[['Distance']].apply(max_min_scaler)
 
         G = nx.from_pandas_edgelist(mesh_network, edge_attr="weight")
 
@@ -140,7 +140,6 @@ for file in files:
 
     except:
         pass
-    i+=1
 end_time = time.time()
 run_time = end_time - start_time
 print("代码运行时间为：{}分{}秒".format(int(run_time / 60), round(run_time % 60)))
